@@ -1,0 +1,67 @@
+name: Release Build
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup .NET 9 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Run unit tests
+        run: dotnet test tests/ProjectXLR.Tests/ProjectXLR.Tests.csproj -c Release
+
+      - name: Publish self-contained single-file executable
+        run: >
+          dotnet publish src/ProjectXLR/ProjectXLR.csproj
+          -c Release
+          -r win-x64
+          --self-contained true
+          -p:PublishSingleFile=true
+          -p:IncludeNativeLibrariesForSelfExtract=true
+          -o publish
+
+      - name: Stage release bundle
+        shell: pwsh
+        run: |
+          $stage = "release-stage"
+          New-Item -ItemType Directory -Force -Path $stage | Out-Null
+          Copy-Item "publish/ProjectXLR.exe" $stage
+          if (Test-Path "publish/Assets") {
+            Copy-Item "publish/Assets" (Join-Path $stage "Assets") -Recurse
+          }
+          Copy-Item "Install.bat" $stage
+          Copy-Item "Install.ps1" $stage
+          Copy-Item "LICENSE" $stage
+          Copy-Item "README.md" $stage
+          Copy-Item "FAQ.md" $stage
+          New-Item -ItemType Directory -Force -Path (Join-Path $stage "tools") | Out-Null
+          Copy-Item "tools/Setup-DeepFilterNet.bat" (Join-Path $stage "tools/Setup-DeepFilterNet.bat")
+          Compress-Archive -Path "$stage/*" -DestinationPath "ProjectXLR-win-x64.zip" -Force
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ProjectXLR-win-x64
+          path: ProjectXLR-win-x64.zip
+
+      - name: Create GitHub Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: ProjectXLR-win-x64.zip

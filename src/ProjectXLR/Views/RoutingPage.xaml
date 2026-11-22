@@ -1,0 +1,280 @@
+<UserControl x:Class="ProjectXLR.Views.RoutingPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:ProjectXLR.Controls">
+    <UserControl.Resources>
+        <!-- Small pill that is blue when on. Used for connecting a source to a destination. -->
+        <Style x:Key="RouteChip" TargetType="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource TextSecondaryBrush}" />
+            <Setter Property="FontSize" Value="12.5" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Margin" Value="0,0,6,6" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Border x:Name="Bd" Background="{StaticResource ControlBrush}" CornerRadius="8" Padding="11,6">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource ControlHoverBrush}" />
+                                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+                            </Trigger>
+                            <Trigger Property="IsChecked" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource AccentBrush}" />
+                                <Setter Property="Foreground" Value="White" />
+                                <Setter Property="FontWeight" Value="SemiBold" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Plain text button that hides a source -->
+        <Style x:Key="QuietLink" TargetType="CheckBox">
+            <Setter Property="Foreground" Value="{StaticResource TextTertiaryBrush}" />
+            <Setter Property="FontSize" Value="12.5" />
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="CheckBox">
+                        <Border x:Name="Bd" Background="Transparent" CornerRadius="6" Padding="8,3">
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="Bd" Property="Background" Value="{StaticResource ControlBrush}" />
+                                <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+        <!-- Round connection point on the edge of a card -->
+        <Style x:Key="Port" TargetType="Border">
+            <Setter Property="Width" Value="14" />
+            <Setter Property="Height" Value="14" />
+            <Setter Property="CornerRadius" Value="7" />
+            <Setter Property="BorderThickness" Value="2" />
+            <Setter Property="Background" Value="{StaticResource CanvasBrush}" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+    </UserControl.Resources>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24,20,24,72">
+            <TextBlock Text="Routing" Style="{StaticResource PageTitle}" />
+            <TextBlock Text="Choose where each sound plays." Style="{StaticResource PageSubtitle}" Margin="0,3,0,18" />
+
+            <c:AdaptiveColumns MinColumnWidth="520">
+
+                <!-- CONNECTIONS -->
+                <StackPanel>
+                    <Grid Margin="4,0,0,8">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="Auto" />
+                        </Grid.ColumnDefinitions>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="Connections" Style="{StaticResource SectionLabel}" />
+                            <c:InfoTip Text="Each sound on the left can play in any of the places on the right. Tap a place under a sound to connect it, tap again to disconnect. The lines show what is connected." />
+                        </StackPanel>
+                        <Button Grid.Column="1" Content="Reset connections" Click="ResetConnections_Click" Style="{StaticResource Btn}" Padding="12,5"
+                                ToolTip="Puts every sound back to its usual places." />
+                    </Grid>
+
+                    <Grid x:Name="RoutingBoardGrid" SizeChanged="Board_SizeChanged">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="1.35*" />
+                            <ColumnDefinition Width="0.55*" MinWidth="72" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <!-- Wires sit behind the cards so they appear to come out of the ports -->
+                        <Canvas x:Name="RoutingWireCanvas" Grid.RowSpan="2" Grid.ColumnSpan="3" IsHitTestVisible="False" />
+
+                        <TextBlock Grid.Row="0" Grid.Column="0" Text="Sounds" Style="{StaticResource RowCaption}" Margin="4,0,0,6" />
+                        <TextBlock Grid.Row="0" Grid.Column="2" Text="Plays in" Style="{StaticResource RowCaption}" Margin="4,0,0,6" />
+
+                        <!-- SOURCES -->
+                        <ItemsControl Grid.Row="1" Grid.Column="0" ItemsSource="{Binding ActiveRoutingRows}" VerticalAlignment="Top">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Style="{StaticResource GroupCard}" Padding="14,12" Margin="0,0,0,10">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*" />
+                                                <ColumnDefinition Width="Auto" />
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel>
+                                                <Grid>
+                                                    <Grid.ColumnDefinitions>
+                                                        <ColumnDefinition Width="*" />
+                                                        <ColumnDefinition Width="Auto" />
+                                                    </Grid.ColumnDefinitions>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Ellipse Width="10" Height="10" Fill="{Binding WireColorHex}" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                                        <TextBlock Text="{Binding InputName}" Style="{StaticResource RowTitle}" FontWeight="SemiBold" />
+                                                    </StackPanel>
+                                                    <CheckBox Grid.Column="1" Content="Hide" IsChecked="{Binding IsInputEnabled, Mode=TwoWay}" Style="{StaticResource QuietLink}"
+                                                              ToolTip="Takes this sound off the board. You can add it back from Not on the board." />
+                                                </Grid>
+                                                <TextBlock Text="{Binding InputSubtitle}" Style="{StaticResource RowCaption}" />
+                                                <WrapPanel Margin="0,10,0,-6">
+                                                    <CheckBox Content="Headphones" IsChecked="{Binding Headphones, Mode=TwoWay}" Click="Route_Click" Style="{StaticResource RouteChip}" ToolTip="Hear this in your headphones." />
+                                                    <CheckBox Content="Stream" IsChecked="{Binding BroadcastMix, Mode=TwoWay}" Click="Route_Click" Style="{StaticResource RouteChip}" ToolTip="Send this to your stream or recording (what your viewers hear)." />
+                                                    <CheckBox Content="Voice chat" IsChecked="{Binding ChatMic, Mode=TwoWay}" Click="Route_Click" Visibility="{Binding CanRouteToChatMic, Converter={StaticResource BoolToVis}}" Style="{StaticResource RouteChip}" ToolTip="Let people in Discord and games hear this." />
+                                                    <CheckBox Content="Speakers" IsChecked="{Binding LineOut, Mode=TwoWay}" Click="Route_Click" Style="{StaticResource RouteChip}" ToolTip="Send this to speakers plugged into the Line Out port on the back." />
+                                                </WrapPanel>
+                                            </StackPanel>
+                                            <Border Grid.Column="1" Style="{StaticResource Port}" BorderBrush="{Binding WireColorHex}" Margin="14,0,-21,0"
+                                                    Tag="{Binding Input}" Loaded="InputSocket_Loaded" Unloaded="InputSocket_Unloaded" />
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <!-- DESTINATIONS -->
+                        <Grid Grid.Row="1" Grid.Column="2">
+                            <Grid.RowDefinitions>
+                                <RowDefinition Height="*" MinHeight="86" />
+                                <RowDefinition Height="*" MinHeight="86" />
+                                <RowDefinition Height="*" MinHeight="86" />
+                                <RowDefinition Height="*" MinHeight="86" />
+                            </Grid.RowDefinitions>
+                            <Border Grid.Row="0" VerticalAlignment="Center" Style="{StaticResource GroupCard}" Padding="14,12" Margin="0,0,0,10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border x:Name="SocketOutHeadphones" Style="{StaticResource Port}" BorderBrush="{StaticResource TextSecondaryBrush}" Margin="-21,0,14,0" />
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="Headphones" Style="{StaticResource RowTitle}" FontWeight="SemiBold" />
+                                        <TextBlock Text="{Binding HeadphonesConnectedSummary}" Style="{StaticResource RowCaption}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                            <Border Grid.Row="1" VerticalAlignment="Center" Style="{StaticResource GroupCard}" Padding="14,12" Margin="0,0,0,10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border x:Name="SocketOutBroadcastMix" Style="{StaticResource Port}" BorderBrush="{StaticResource TextSecondaryBrush}" Margin="-21,0,14,0" />
+                                    <StackPanel Grid.Column="1">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Stream" Style="{StaticResource RowTitle}" FontWeight="SemiBold" />
+                                            <c:InfoTip Text="What your viewers and recordings hear. Pick it as the audio source in OBS, Twitch or YouTube." />
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding StreamMixConnectedSummary}" Style="{StaticResource RowCaption}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                            <Border Grid.Row="2" VerticalAlignment="Center" Style="{StaticResource GroupCard}" Padding="14,12" Margin="0,0,0,10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border x:Name="SocketOutChatMic" Style="{StaticResource Port}" BorderBrush="{StaticResource TextSecondaryBrush}" Margin="-21,0,14,0" />
+                                    <StackPanel Grid.Column="1">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Voice chat" Style="{StaticResource RowTitle}" FontWeight="SemiBold" />
+                                            <c:InfoTip Text="What people hear when you talk in Discord or a game. Choose Chat Mic (GoXLR Mini) as your microphone there." />
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding ChatMicConnectedSummary}" Style="{StaticResource RowCaption}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                            <Border Grid.Row="3" VerticalAlignment="Center" Style="{StaticResource GroupCard}" Padding="14,12" Margin="0,0,0,10">
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto" />
+                                        <ColumnDefinition Width="*" />
+                                    </Grid.ColumnDefinitions>
+                                    <Border x:Name="SocketOutLineOut" Style="{StaticResource Port}" BorderBrush="{StaticResource TextSecondaryBrush}" Margin="-21,0,14,0" />
+                                    <StackPanel Grid.Column="1">
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Speakers" Style="{StaticResource RowTitle}" FontWeight="SemiBold" />
+                                            <c:InfoTip Text="Also called Line Out. The 3.5mm port on the back of the GoXLR Mini, for desktop speakers." />
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding LineOutConnectedSummary}" Style="{StaticResource RowCaption}" />
+                                    </StackPanel>
+                                </Grid>
+                            </Border>
+                        </Grid>
+                    </Grid>
+                </StackPanel>
+
+                <!-- STREAM RULES -->
+                <StackPanel>
+                    <StackPanel Style="{StaticResource GroupHeader}">
+                        <TextBlock Text="Keep off my stream" Style="{StaticResource SectionLabel}" />
+                        <c:InfoTip Text="Two optional rules. Turn on one, both or neither; they work together. They change the connections above for you." />
+                    </StackPanel>
+                    <Border Style="{StaticResource GroupCard}">
+                        <StackPanel>
+                            <Border Style="{StaticResource Row}">
+                                <c:AdaptiveRow>
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Keep music off my stream" Style="{StaticResource RowTitle}" />
+                                            <c:InfoTip Text="You still hear your music in your headphones, but it is not sent to your stream or recordings. This avoids copyright problems on Twitch and YouTube." />
+                                        </StackPanel>
+                                        <TextBlock Text="You hear it. Viewers don't." Style="{StaticResource RowCaption}" />
+                                    </StackPanel>
+                                    <CheckBox IsChecked="{Binding IsMusicMutedOnStream, Mode=TwoWay}" Style="{StaticResource Switch}" />
+                                </c:AdaptiveRow>
+                            </Border>
+                            <Border Style="{StaticResource RowLast}">
+                                <c:AdaptiveRow>
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Keep voice chat off my stream" Style="{StaticResource RowTitle}" />
+                                            <c:InfoTip Text="You still hear your friends on Discord in your headphones, but their voices are not sent to your stream or recordings." />
+                                        </StackPanel>
+                                        <TextBlock Text="You hear them. Viewers don't." Style="{StaticResource RowCaption}" />
+                                    </StackPanel>
+                                    <CheckBox IsChecked="{Binding IsChatPrivateInHeadset, Mode=TwoWay}" Style="{StaticResource Switch}" />
+                                </c:AdaptiveRow>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- SOUNDS NOT ON THE BOARD: only shown when something is hidden -->
+                <StackPanel Visibility="{Binding HasInactiveRoutingRows}">
+                    <StackPanel Style="{StaticResource GroupHeader}">
+                        <TextBlock Text="Not on the board" Style="{StaticResource SectionLabel}" />
+                        <c:InfoTip Text="Sounds you have hidden. Tap one to bring it back." />
+                    </StackPanel>
+                    <Border Style="{StaticResource GroupCard}" Padding="16,12,16,6">
+                        <ItemsControl ItemsSource="{Binding InactiveRoutingRows}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <CheckBox Content="{Binding InputName, StringFormat=Add {0}}" IsChecked="{Binding IsInputEnabled, Mode=TwoWay}"
+                                              Style="{StaticResource RouteChip}" ToolTip="Bring this sound back onto the board." />
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </Border>
+                </StackPanel>
+            </c:AdaptiveColumns>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

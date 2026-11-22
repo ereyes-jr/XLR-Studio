@@ -1,0 +1,18 @@
+# Visual Studio / .NET build artifacts
+bin/
+obj/
+.vs/
+*.user
+*.suo
+*.log
+TestResults/
+publish/
+
+# Third-party binary tools and installers (too large for Git)
+tools/Alt-Denoiser/
+tools/EqualizerAPO/
+
+# OS / Editor
+.DS_Store
+Thumbs.db
+desktop.ini

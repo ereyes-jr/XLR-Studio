@@ -1,0 +1,342 @@
+<UserControl x:Class="ProjectXLR.Views.VoicePage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:c="clr-namespace:ProjectXLR.Controls">
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24,20,24,72">
+            <c:AdaptiveRow Margin="0,0,0,18">
+                <StackPanel>
+                    <TextBlock Text="Voice" Style="{StaticResource PageTitle}" />
+                    <TextBlock Text="How you sound to everyone else." Style="{StaticResource PageSubtitle}" />
+                </StackPanel>
+                <Button Content="Check my voice" Click="CheckMyVoice_Click" Style="{StaticResource BtnAccent}"
+                        ToolTip="Listens to your room and your voice for about 30 seconds, then sets your mic to suit you." />
+            </c:AdaptiveRow>
+
+            <!-- Only appears when two noise tools are fighting each other -->
+            <Border Style="{StaticResource Notice}" Margin="0,0,0,20" Visibility="{Binding IsAiDoubleSuppressionConflict, Converter={StaticResource BoolToVis}}">
+                <c:AdaptiveRow>
+                    <StackPanel>
+                        <TextBlock Text="Your noise settings are competing" Style="{StaticResource RowTitle}" FontWeight="SemiBold" />
+                        <TextBlock Text="AI noise removal and a strict noise gate are both on, which can cut off the ends of your words." Style="{StaticResource RowCaption}" />
+                    </StackPanel>
+                    <Button Content="Fix it for me" Click="AutoHarmonizeSuppression_Click" Style="{StaticResource BtnAccent}"
+                            ToolTip="Relaxes the noise gate and lets AI noise removal handle the keyboard." />
+                </c:AdaptiveRow>
+            </Border>
+
+            <c:AdaptiveColumns MinColumnWidth="440">
+
+                <!-- MICROPHONE -->
+                <StackPanel>
+                    <StackPanel Style="{StaticResource GroupHeader}">
+                        <TextBlock Text="Microphone" Style="{StaticResource SectionLabel}" />
+                        <c:InfoTip Text="Start here. Pick your mic type, then speak normally and raise or lower Mic level until the meter at the top of the window sits in Ideal." />
+                    </StackPanel>
+                    <Border Style="{StaticResource GroupCard}">
+                        <StackPanel>
+                            <Border Style="{StaticResource Row}">
+                                <c:AdaptiveRow>
+                                    <TextBlock Text="Mic type" Style="{StaticResource RowTitle}" />
+                                    <Border Style="{StaticResource SegmentedTrack}">
+                                        <UniformGrid Rows="1">
+                                            <RadioButton Content="Dynamic" GroupName="MicType" IsChecked="{Binding IsDynamicMic, Mode=TwoWay}" Style="{StaticResource Segment}" ToolTip="XLR mics that need no extra power, like the SM7B or PodMic." />
+                                            <RadioButton Content="Condenser" GroupName="MicType" IsChecked="{Binding IsCondenserMic, Mode=TwoWay}" Style="{StaticResource Segment}" ToolTip="Studio mics that need power. This turns on +48V phantom power." />
+                                            <RadioButton Content="Headset" GroupName="MicType" IsChecked="{Binding IsJackMic, Mode=TwoWay}" Style="{StaticResource Segment}" ToolTip="Mics with a 3.5mm plug in the front Mic port." />
+                                        </UniformGrid>
+                                    </Border>
+                                </c:AdaptiveRow>
+                            </Border>
+                            <Border Style="{StaticResource Row}">
+                                <StackPanel>
+                                    <c:AdaptiveRow>
+                                        <StackPanel>
+                                            <TextBlock Text="Mic level" Style="{StaticResource RowTitle}" />
+                                            <TextBlock Text="Also called gain. Set it once, then leave it." Style="{StaticResource RowCaption}" />
+                                        </StackPanel>
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                            <Button Content="−" Tag="-2" Click="MicGainStep_Click" Style="{StaticResource BtnStep}" ToolTip="Lower by 2 dB" />
+                                            <TextBlock Text="{Binding MicGainDb, StringFormat={}{0} dB}" Style="{StaticResource ValueText}" Width="62" TextAlignment="Center" />
+                                            <Button Content="+" Tag="2" Click="MicGainStep_Click" Style="{StaticResource BtnStep}" ToolTip="Raise by 2 dB" />
+                                        </StackPanel>
+                                    </c:AdaptiveRow>
+                                    <Border Height="4" Background="{StaticResource InsetBrush}" CornerRadius="2" Margin="0,11,0,0" ClipToBounds="True">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="{Binding MicGainActiveWidth}" />
+                                                <ColumnDefinition Width="{Binding MicGainRemainingWidth}" />
+                                            </Grid.ColumnDefinitions>
+                                            <Border Background="{StaticResource AccentBrush}" CornerRadius="2" />
+                                        </Grid>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource RowLast}">
+                                <StackPanel>
+                                    <c:AdaptiveRow>
+                                        <StackPanel>
+                                            <TextBlock Text="Hear myself" Style="{StaticResource RowTitle}" />
+                                            <TextBlock Text="Plays your mic in your headphones." Style="{StaticResource RowCaption}" />
+                                        </StackPanel>
+                                        <CheckBox IsChecked="{Binding SidetoneEnabled, Mode=TwoWay}" Style="{StaticResource Switch}" ToolTip="Also called sidetone. Other people never hear this. Because your headphones are on a USB DAC, it plays after noise removal, so there's a small delay." />
+                                    </c:AdaptiveRow>
+                                    <!-- Volume only matters when it's on -->
+                                    <c:AdaptiveRow Margin="0,11,0,0" Visibility="{Binding SidetoneEnabled, Converter={StaticResource BoolToVis}}">
+                                        <TextBlock Text="Volume" Style="{StaticResource RowTitle}" Foreground="{StaticResource TextSecondaryBrush}" />
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                            <Button Content="−" Tag="-10" Click="SidetoneStep_Click" Style="{StaticResource BtnStep}" />
+                                            <TextBlock Text="{Binding SidetoneVolumePercent, StringFormat={}{0}%}" Style="{StaticResource ValueText}" Width="62" TextAlignment="Center" />
+                                            <Button Content="+" Tag="10" Click="SidetoneStep_Click" Style="{StaticResource BtnStep}" />
+                                        </StackPanel>
+                                    </c:AdaptiveRow>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- BACKGROUND NOISE -->
+                <StackPanel>
+                    <StackPanel Style="{StaticResource GroupHeader}">
+                        <TextBlock Text="Background noise" Style="{StaticResource SectionLabel}" />
+                        <c:InfoTip Text="Two separate tools. Room noise runs on the GoXLR and silences your mic when you stop talking. AI removal runs on your PC and removes keyboard clicks even while you talk." />
+                    </StackPanel>
+                    <Border Style="{StaticResource GroupCard}">
+                        <StackPanel>
+                            <Border Style="{StaticResource Row}">
+                                <StackPanel>
+                                    <c:AdaptiveRow>
+                                        <StackPanel>
+                                            <TextBlock Text="Reduce room noise" Style="{StaticResource RowTitle}" />
+                                            <TextBlock Text="{Binding StudioNoiseSuppressionStatusText}" Style="{StaticResource RowCaption}" />
+                                        </StackPanel>
+                                        <CheckBox IsChecked="{Binding StudioNoiseSuppressionEnabled, Mode=TwoWay}" Style="{StaticResource Switch}" />
+                                    </c:AdaptiveRow>
+                                    <Border Style="{StaticResource SegmentedTrack}" HorizontalAlignment="Stretch" Margin="0,11,0,0"
+                                            Visibility="{Binding StudioNoiseSuppressionEnabled, Converter={StaticResource BoolToVis}}">
+                                        <UniformGrid Rows="1">
+                                            <RadioButton Content="Quiet room" GroupName="NoiseMode" IsChecked="{Binding IsPresetRawStudio, Mode=TwoWay}" Style="{StaticResource Segment}" ToolTip="Light. Blocks PC fan hum and keeps your voice natural." />
+                                            <RadioButton Content="Everyday" GroupName="NoiseMode" IsChecked="{Binding IsPresetStudioClean, Mode=TwoWay}" Style="{StaticResource Segment}" ToolTip="Recommended. Blocks room echo and air conditioning." />
+                                            <RadioButton Content="Noisy desk" GroupName="NoiseMode" IsChecked="{Binding IsPresetKeyboardRejection, Mode=TwoWay}" Style="{StaticResource Segment}" ToolTip="Strict. Cuts keyboard and mouse clicks the moment you stop talking." />
+                                        </UniformGrid>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource Row}">
+                                <StackPanel>
+                                    <c:AdaptiveRow>
+                                        <StackPanel>
+                                            <TextBlock Text="AI noise removal" Style="{StaticResource RowTitle}" />
+                                            <TextBlock Text="Removes keyboard clicks from what Discord and games hear." Style="{StaticResource RowCaption}" />
+                                            <TextBlock Text="{Binding DeepFilterNetStatusTextShort}" Style="{StaticResource RowCaption}" Foreground="{Binding DeepFilterNetBadgeColor}" />
+                                        </StackPanel>
+                                        <CheckBox IsChecked="{Binding DeepFilterNetToggleEnabled, Mode=TwoWay}" IsEnabled="{Binding IsDeepFilterNetInstalled}" Style="{StaticResource Switch}"
+                                                  ToolTip="Uses DeepFilterNet 3, an open-source AI noise filter, on what Discord and games hear from Chat Mic." />
+                                    </c:AdaptiveRow>
+                                    <Button Content="{Binding DeepFilterNetActionButtonText}" Click="InstallOrRepairDeepFilterNet_Click" Style="{StaticResource Btn}" HorizontalAlignment="Left" Margin="0,11,0,0"
+                                            Visibility="{Binding IsDeepFilterNetInstalled, Converter={StaticResource InverseBoolToVis}}" />
+                                    <Border Style="{StaticResource SegmentedTrack}" HorizontalAlignment="Stretch" Margin="0,11,0,0"
+                                            Visibility="{Binding DeepFilterNetToggleEnabled, Converter={StaticResource BoolToVis}}">
+                                        <UniformGrid Rows="1">
+                                            <RadioButton Content="Gentle" GroupName="AiStrength" IsChecked="{Binding IsDenoiseGentle, Mode=TwoWay}" Style="{StaticResource Segment}" ToolTip="Removes the least and keeps the most vocal detail. Best for quiet rooms." />
+                                            <RadioButton Content="Balanced" GroupName="AiStrength" IsChecked="{Binding IsDenoiseBalanced, Mode=TwoWay}" Style="{StaticResource Segment}" ToolTip="A good balance for voice chat and games." />
+                                            <RadioButton Content="Strongest" GroupName="AiStrength" IsChecked="{Binding IsDenoiseAggressive, Mode=TwoWay}" Style="{StaticResource Segment}" ToolTip="Removes the most. Best for loud mechanical keyboards." />
+                                        </UniformGrid>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource RowLast}">
+                                <c:AdaptiveRow>
+                                    <StackPanel>
+                                        <TextBlock Text="Test what others hear" Style="{StaticResource RowTitle}" />
+                                        <TextBlock Text="Plays your filtered mic back to you. Try typing while you talk." Style="{StaticResource RowCaption}" />
+                                    </StackPanel>
+                                    <Button Content="{Binding MicCheckButtonText}" Click="ToggleMicCheck_Click" Style="{StaticResource Btn}" />
+                                </c:AdaptiveRow>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- YOUR SOUND -->
+                <StackPanel>
+                    <StackPanel Style="{StaticResource GroupHeader}">
+                        <TextBlock Text="Your sound" Style="{StaticResource SectionLabel}" />
+                        <c:InfoTip Text="Pick a starting point, then adjust anything below. The two lines on the meter at the top move as you change these." />
+                    </StackPanel>
+                    <Border Style="{StaticResource GroupCard}">
+                        <StackPanel>
+                            <Border Style="{StaticResource Row}">
+                                <c:AdaptiveRow>
+                                    <TextBlock Text="Start from" Style="{StaticResource RowTitle}" />
+                                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                                        <Button Content="Warm" Click="MicPresetBroadcast_Click" Style="{StaticResource Btn}" Margin="0,0,6,0" ToolTip="Rich, even podcast voice with balanced noise blocking." />
+                                        <Button Content="Noisy room" Click="MicPresetNoisyRoom_Click" Style="{StaticResource Btn}" Margin="0,0,6,0" ToolTip="Tighter noise blocking for loud rooms and keyboards." />
+                                        <Button Content="Natural" Click="MicPresetFlat_Click" Style="{StaticResource Btn}" ToolTip="Turns off all shaping, so you hear your mic as it is." />
+                                    </StackPanel>
+                                </c:AdaptiveRow>
+                            </Border>
+                            <Border Style="{StaticResource Row}">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Silence when I'm not talking" Style="{StaticResource RowTitle}" />
+                                        <c:InfoTip Text="Also called a noise gate. It mutes your mic in the gaps between words. Higher settings block more but need you to speak closer to the mic. This is the amber line on the meter." />
+                                    </StackPanel>
+                                    <Border Style="{StaticResource SegmentedTrack}" HorizontalAlignment="Stretch" Margin="0,8,0,0">
+                                        <UniformGrid Rows="1">
+                                            <RadioButton Content="Off" GroupName="Gate" IsChecked="{Binding IsGateSelectedOff, Mode=OneWay}" Tag="Off" Click="GatePreset_Click" Style="{StaticResource Segment}" />
+                                            <RadioButton Content="Light" GroupName="Gate" IsChecked="{Binding IsGateSelectedLight, Mode=OneWay}" Tag="Light" Click="GatePreset_Click" Style="{StaticResource Segment}" />
+                                            <RadioButton Content="Balanced" GroupName="Gate" IsChecked="{Binding IsGateSelectedBalanced, Mode=OneWay}" Tag="Balanced" Click="GatePreset_Click" Style="{StaticResource Segment}" />
+                                            <RadioButton Content="Strict" GroupName="Gate" IsChecked="{Binding IsGateSelectedStrict, Mode=OneWay}" Tag="Strict" Click="GatePreset_Click" Style="{StaticResource Segment}" />
+                                            <RadioButton Content="Max" GroupName="Gate" IsChecked="{Binding IsGateSelectedMax, Mode=OneWay}" Tag="Max" Click="GatePreset_Click" Style="{StaticResource Segment}" />
+                                        </UniformGrid>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource Row}">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Tone" Style="{StaticResource RowTitle}" />
+                                        <c:InfoTip Text="Also called EQ. Changes how bright or deep you sound. Clear helps you cut through game audio; Warm and Deep sound more like radio." />
+                                    </StackPanel>
+                                    <Border Style="{StaticResource SegmentedTrack}" HorizontalAlignment="Stretch" Margin="0,8,0,0">
+                                        <UniformGrid Rows="1">
+                                            <RadioButton Content="Natural" GroupName="Eq" IsChecked="{Binding IsEqSelectedFlat, Mode=OneWay}" Tag="Flat" Click="EqPreset_Click" Style="{StaticResource Segment}" />
+                                            <RadioButton Content="Clear" GroupName="Eq" IsChecked="{Binding IsEqSelectedCrisp, Mode=OneWay}" Tag="Crisp" Click="EqPreset_Click" Style="{StaticResource Segment}" />
+                                            <RadioButton Content="Balanced" GroupName="Eq" IsChecked="{Binding IsEqSelectedBalanced, Mode=OneWay}" Tag="Balanced" Click="EqPreset_Click" Style="{StaticResource Segment}" />
+                                            <RadioButton Content="Warm" GroupName="Eq" IsChecked="{Binding IsEqSelectedWarm, Mode=OneWay}" Tag="Warm" Click="EqPreset_Click" Style="{StaticResource Segment}" />
+                                            <RadioButton Content="Deep" GroupName="Eq" IsChecked="{Binding IsEqSelectedDeep, Mode=OneWay}" Tag="Deep" Click="EqPreset_Click" Style="{StaticResource Segment}" />
+                                        </UniformGrid>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource Row}">
+                                <StackPanel>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Even out my volume" Style="{StaticResource RowTitle}" />
+                                        <c:InfoTip Text="Also called a compressor. Lifts quiet speech and tames sudden shouts, so you stay at a steady volume. This is the gray line on the meter." />
+                                    </StackPanel>
+                                    <Border Style="{StaticResource SegmentedTrack}" HorizontalAlignment="Stretch" Margin="0,8,0,0">
+                                        <UniformGrid Rows="1">
+                                            <RadioButton Content="Off" GroupName="Comp" IsChecked="{Binding IsCompSelectedOff, Mode=OneWay}" Tag="Off" Click="CompressorPreset_Click" Style="{StaticResource Segment}" />
+                                            <RadioButton Content="Gentle" GroupName="Comp" IsChecked="{Binding IsCompSelectedGentle, Mode=OneWay}" Tag="Gentle" Click="CompressorPreset_Click" Style="{StaticResource Segment}" />
+                                            <RadioButton Content="Balanced" GroupName="Comp" IsChecked="{Binding IsCompSelectedBalanced, Mode=OneWay}" Tag="Balanced" Click="CompressorPreset_Click" Style="{StaticResource Segment}" />
+                                            <RadioButton Content="Strong" GroupName="Comp" IsChecked="{Binding IsCompSelectedBroadcast, Mode=OneWay}" Tag="Broadcast" Click="CompressorPreset_Click" Style="{StaticResource Segment}" />
+                                            <RadioButton Content="Max" GroupName="Comp" IsChecked="{Binding IsCompSelectedMaxBoost, Mode=OneWay}" Tag="MaxBoost" Click="CompressorPreset_Click" Style="{StaticResource Segment}" />
+                                        </UniformGrid>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+                            <Border Style="{StaticResource Row}">
+                                <c:AdaptiveRow>
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Keep my volume steady" Style="{StaticResource RowTitle}" />
+                                            <c:InfoTip Text="Watches what your apps receive and slowly turns your voice up or down as you talk, so soft speech and leaning back stay audible. It holds still when you stop talking and ignores short sounds like key clicks." />
+                                        </StackPanel>
+                                        <TextBlock Text="{Binding VoiceLevelerStatusText}" Style="{StaticResource RowCaption}" />
+                                    </StackPanel>
+                                    <CheckBox IsChecked="{Binding VoiceLevelerEnabled, Mode=TwoWay}" Style="{StaticResource Switch}" />
+                                </c:AdaptiveRow>
+                            </Border>
+                            <Border Style="{StaticResource Row}">
+                                <c:AdaptiveRow>
+                                    <StackPanel>
+                                        <StackPanel Orientation="Horizontal">
+                                            <TextBlock Text="Coach me while I talk" Style="{StaticResource RowTitle}" />
+                                            <c:InfoTip Text="Shows a tip under the meter if a problem keeps happening, like your apps not receiving your mic or the gate cutting your words. It never changes anything until you press the button." />
+                                        </StackPanel>
+                                        <TextBlock Text="Tips appear only when something keeps going wrong." Style="{StaticResource RowCaption}" />
+                                    </StackPanel>
+                                    <CheckBox IsChecked="{Binding VoiceCoachEnabled, Mode=TwoWay}" Style="{StaticResource Switch}" />
+                                </c:AdaptiveRow>
+                            </Border>
+                            <Border Style="{StaticResource Row}">
+                                <c:AdaptiveRow>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Soften harsh S sounds" Style="{StaticResource RowTitle}" />
+                                        <c:InfoTip Text="Also called a de-esser. Smooths the sharp hiss on S and SH sounds." />
+                                    </StackPanel>
+                                    <Border Style="{StaticResource SegmentedTrack}">
+                                        <UniformGrid Rows="1">
+                                            <RadioButton Content="Off" GroupName="DeEsser" IsChecked="{Binding IsDeEsserSelectedOff, Mode=OneWay}" Tag="0" Click="DeEsserPreset_Click" Style="{StaticResource Segment}" />
+                                            <RadioButton Content="Soft" GroupName="DeEsser" IsChecked="{Binding IsDeEsserSelectedSoft, Mode=OneWay}" Tag="15" Click="DeEsserPreset_Click" Style="{StaticResource Segment}" />
+                                            <RadioButton Content="Medium" GroupName="DeEsser" IsChecked="{Binding IsDeEsserSelectedMed, Mode=OneWay}" Tag="35" Click="DeEsserPreset_Click" Style="{StaticResource Segment}" />
+                                            <RadioButton Content="High" GroupName="DeEsser" IsChecked="{Binding IsDeEsserSelectedHigh, Mode=OneWay}" Tag="60" Click="DeEsserPreset_Click" Style="{StaticResource Segment}" />
+                                        </UniformGrid>
+                                    </Border>
+                                </c:AdaptiveRow>
+                            </Border>
+                            <Border Style="{StaticResource RowLast}">
+                                <c:AdaptiveRow>
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="Censor bleep volume" Style="{StaticResource RowTitle}" />
+                                        <c:InfoTip Text="How loud the tone is when you press the bleep button on the GoXLR." />
+                                    </StackPanel>
+                                    <Border Style="{StaticResource SegmentedTrack}">
+                                        <UniformGrid Rows="1">
+                                            <RadioButton Content="Quiet" GroupName="Bleep" IsChecked="{Binding IsBleepSelectedQuiet, Mode=OneWay}" Tag="-18" Click="BleepPreset_Click" Style="{StaticResource Segment}" />
+                                            <RadioButton Content="Normal" GroupName="Bleep" IsChecked="{Binding IsBleepSelectedNormal, Mode=OneWay}" Tag="-9" Click="BleepPreset_Click" Style="{StaticResource Segment}" />
+                                            <RadioButton Content="Loud" GroupName="Bleep" IsChecked="{Binding IsBleepSelectedLoud, Mode=OneWay}" Tag="-3" Click="BleepPreset_Click" Style="{StaticResource Segment}" />
+                                            <RadioButton Content="Max" GroupName="Bleep" IsChecked="{Binding IsBleepSelectedMax, Mode=OneWay}" Tag="0" Click="BleepPreset_Click" Style="{StaticResource Segment}" />
+                                        </UniformGrid>
+                                    </Border>
+                                </c:AdaptiveRow>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+
+                <!-- FINE TUNING: hidden until asked for -->
+                <StackPanel>
+                    <StackPanel Style="{StaticResource GroupHeader}">
+                        <TextBlock Text="Fine tuning" Style="{StaticResource SectionLabel}" />
+                        <c:InfoTip Text="Exact controls for anything the choices above don't cover. You never need these for a good result." />
+                    </StackPanel>
+                    <Border Style="{StaticResource GroupCard}">
+                        <StackPanel>
+                            <Border Style="{StaticResource RowLast}">
+                                <c:AdaptiveRow>
+                                    <TextBlock Text="Show exact controls" Style="{StaticResource RowTitle}" />
+                                    <CheckBox IsChecked="{Binding IsVoiceFineTuneExpanded, Mode=TwoWay}" Style="{StaticResource Switch}" />
+                                </c:AdaptiveRow>
+                            </Border>
+                            <UniformGrid Rows="1" Margin="10,2,10,16" Visibility="{Binding VoiceFineTuneVisibility}">
+                                <StackPanel>
+                                    <TextBlock Text="Gate" Style="{StaticResource RowCaption}" HorizontalAlignment="Center" ToolTip="The level below which your mic is silenced." />
+                                    <Slider Style="{StaticResource Fader}" Height="130" Minimum="-59" Maximum="0" Value="{Binding GateThresholdDb, Mode=TwoWay}" Margin="0,6" />
+                                    <TextBlock Text="{Binding GateThresholdDb, StringFormat={}{0} dB}" Style="{StaticResource RowCaption}" HorizontalAlignment="Center" />
+                                </StackPanel>
+                                <StackPanel>
+                                    <TextBlock Text="Leveler" Style="{StaticResource RowCaption}" HorizontalAlignment="Center" ToolTip="The level above which your voice gets evened out." />
+                                    <Slider Style="{StaticResource Fader}" Height="130" Minimum="-40" Maximum="0" Value="{Binding CompressorThresholdDb, Mode=TwoWay}" Margin="0,6" />
+                                    <TextBlock Text="{Binding CompressorThresholdDb, StringFormat={}{0} dB}" Style="{StaticResource RowCaption}" HorizontalAlignment="Center" />
+                                </StackPanel>
+                                <StackPanel>
+                                    <TextBlock Text="Bass" Style="{StaticResource RowCaption}" HorizontalAlignment="Center" ToolTip="90 Hz: the low rumble in your voice." />
+                                    <Slider Style="{StaticResource Fader}" Height="130" Minimum="-9" Maximum="9" Value="{Binding Eq90HzGain, Mode=TwoWay}" Margin="0,6" />
+                                    <TextBlock Text="{Binding Eq90HzGain, StringFormat={}{0} dB}" Style="{StaticResource RowCaption}" HorizontalAlignment="Center" />
+                                </StackPanel>
+                                <StackPanel>
+                                    <TextBlock Text="Warmth" Style="{StaticResource RowCaption}" HorizontalAlignment="Center" ToolTip="250 Hz: the body of your voice." />
+                                    <Slider Style="{StaticResource Fader}" Height="130" Minimum="-9" Maximum="9" Value="{Binding Eq250HzGain, Mode=TwoWay}" Margin="0,6" />
+                                    <TextBlock Text="{Binding Eq250HzGain, StringFormat={}{0} dB}" Style="{StaticResource RowCaption}" HorizontalAlignment="Center" />
+                                </StackPanel>
+                                <StackPanel>
+                                    <TextBlock Text="Clarity" Style="{StaticResource RowCaption}" HorizontalAlignment="Center" ToolTip="3 kHz: how clearly your words come through." />
+                                    <Slider Style="{StaticResource Fader}" Height="130" Minimum="-9" Maximum="9" Value="{Binding Eq3KHzGain, Mode=TwoWay}" Margin="0,6" />
+                                    <TextBlock Text="{Binding Eq3KHzGain, StringFormat={}{0} dB}" Style="{StaticResource RowCaption}" HorizontalAlignment="Center" />
+                                </StackPanel>
+                                <StackPanel>
+                                    <TextBlock Text="Air" Style="{StaticResource RowCaption}" HorizontalAlignment="Center" ToolTip="8 kHz: the sparkle at the top of your voice." />
+                                    <Slider Style="{StaticResource Fader}" Height="130" Minimum="-9" Maximum="9" Value="{Binding Eq8KHzGain, Mode=TwoWay}" Margin="0,6" />
+                                    <TextBlock Text="{Binding Eq8KHzGain, StringFormat={}{0} dB}" Style="{StaticResource RowCaption}" HorizontalAlignment="Center" />
+                                </StackPanel>
+                            </UniformGrid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </c:AdaptiveColumns>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>
