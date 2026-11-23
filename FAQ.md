@@ -45,7 +45,11 @@ When you use an external USB DAC instead of the GoXLR's headphone jack, **Hear m
 * **"Chat Mic Needs Device Hook":** Click **Configurator** under **Settings → AI noise removal**, open the **Capture devices** tab, check **`Chat Mic (TC-Helicon GoXLR Mini)`**, click **OK**, and reboot if prompted.
 * **"Plugin File Missing":** Make sure `Alt Denoiser.dll` is in `C:\Program Files\EqualizerAPO\VSTPlugins\`, then click **Refresh**.
 * **Stopped working after a Windows Update:** Major Windows updates often reset Equalizer APO hooks. Re-open **Configurator**, re-check `Chat Mic`, and reboot if prompted.
-* **Does AI noise removal work in Discord?** No—because of how Discord captures microphone audio and handles audio processing, DeepFilterNet 3 / Equalizer APO noise suppression does not apply to Discord. Use Discord's built-in noise suppression (Krisp) for Discord; Project XLR's AI filter still handles games and other apps.
+
+### Why doesn't DeepFilterNet 3 / AI noise removal work in Discord?
+Equalizer APO runs DeepFilterNet 3 inside Windows' shared-mode capture APO (Audio Processing Object) chain. On Windows, Discord's WebRTC audio engine opens microphones in raw capture mode (`AUDCLNT_STREAMOPTIONS_RAW`) / bypasses Windows audio enhancements, so Windows skips Equalizer APO completely before audio ever reaches Discord.
+
+The only way to force Discord through DeepFilterNet 3 would be routing your mic through a virtual audio cable (like VB-Cable), which adds buffer latency, extra virtual devices in Windows, and routing/sync headaches—so Project XLR intentionally skips virtual cables. Keep Discord's built-in **Krisp** enabled for Discord, and let DeepFilterNet 3 handle games and other apps.
 
 ### My voice cuts out when I talk quietly, or keyboard clicks still come through
 * Run **Voice → Check my voice** from your normal seating distance so Project XLR can measure your room floor, keyboard clicks, and quiet speech.
