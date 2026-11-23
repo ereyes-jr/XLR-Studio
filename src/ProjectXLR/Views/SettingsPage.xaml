@@ -171,6 +171,7 @@
                                 <StackPanel>
                                     <TextBlock Text="{Binding DeepFilterNetTitle}" Style="{StaticResource RowTitle}" FontWeight="SemiBold" Foreground="{Binding DeepFilterNetBadgeColor}" />
                                     <TextBlock Text="{Binding DeepFilterNetMessage}" Style="{StaticResource RowCaption}" />
+                                    <TextBlock Text="Note: Because of how Discord captures mic audio, this AI noise suppression does not work in Discord—use Discord's built-in noise suppression there." Style="{StaticResource RowCaption}" Margin="0,6,0,0" />
                                 </StackPanel>
                             </Border>
                             <Border Style="{StaticResource RowLast}">

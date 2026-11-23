@@ -127,11 +127,11 @@
                                     <c:AdaptiveRow>
                                         <StackPanel>
                                             <TextBlock Text="AI noise removal" Style="{StaticResource RowTitle}" />
-                                            <TextBlock Text="Removes keyboard clicks from what Discord and games hear." Style="{StaticResource RowCaption}" />
+                                            <TextBlock Text="Removes keyboard clicks from what games and apps hear." Style="{StaticResource RowCaption}" />
                                             <TextBlock Text="{Binding DeepFilterNetStatusTextShort}" Style="{StaticResource RowCaption}" Foreground="{Binding DeepFilterNetBadgeColor}" />
                                         </StackPanel>
                                         <CheckBox IsChecked="{Binding DeepFilterNetToggleEnabled, Mode=TwoWay}" IsEnabled="{Binding IsDeepFilterNetInstalled}" Style="{StaticResource Switch}"
-                                                  ToolTip="Uses DeepFilterNet 3, an open-source AI noise filter, on what Discord and games hear from Chat Mic." />
+                                                  ToolTip="Uses DeepFilterNet 3, an open-source AI noise filter, on what games and apps hear from Chat Mic." />
                                     </c:AdaptiveRow>
                                     <Button Content="{Binding DeepFilterNetActionButtonText}" Click="InstallOrRepairDeepFilterNet_Click" Style="{StaticResource Btn}" HorizontalAlignment="Left" Margin="0,11,0,0"
                                             Visibility="{Binding IsDeepFilterNetInstalled, Converter={StaticResource InverseBoolToVis}}" />
@@ -143,6 +143,7 @@
                                             <RadioButton Content="Strongest" GroupName="AiStrength" IsChecked="{Binding IsDenoiseAggressive, Mode=TwoWay}" Style="{StaticResource Segment}" ToolTip="Removes the most. Best for loud mechanical keyboards." />
                                         </UniformGrid>
                                     </Border>
+                                    <TextBlock Text="Note: Because of how Discord captures microphone audio, this AI noise suppression does not apply to Discord. Use Discord's built-in noise suppression (Krisp) there." Style="{StaticResource RowCaption}" Margin="0,8,0,0" />
                                 </StackPanel>
                             </Border>
                             <Border Style="{StaticResource RowLast}">

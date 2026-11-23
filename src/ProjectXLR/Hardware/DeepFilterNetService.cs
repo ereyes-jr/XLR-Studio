@@ -77,7 +77,7 @@ public sealed class DeepFilterNetService
         {
             CurrentStatus = DeepFilterNetStatus.NotInstalled;
             StatusTitle = "DeepFilterNet 3 AI: Not Installed";
-            StatusMessage = "Install Equalizer APO + DeepFilterNet 3 to eliminate mechanical keyboard clatter in Discord Studio Mode and games with 0 extra audio devices.";
+            StatusMessage = "Install Equalizer APO + DeepFilterNet 3 to eliminate mechanical keyboard clatter in games and voice apps (note: does not apply to Discord) with 0 extra audio devices.";
             StatusBadgeColor = "#8E8E98"; // Gray
         }
         else if (!hooked)
@@ -105,7 +105,7 @@ public sealed class DeepFilterNetService
         {
             CurrentStatus = DeepFilterNetStatus.Active;
             StatusTitle = "DeepFilterNet 3 AI: Active (Zero Noise)";
-            StatusMessage = "DeepFilterNet 3 is actively running at the driver level on Chat Mic. Mechanical keyboard clicks are eliminated across Discord (Studio Mode), games, and all voice apps with 0 extra devices.";
+            StatusMessage = "DeepFilterNet 3 is actively running at the driver level on Chat Mic. Mechanical keyboard clicks are eliminated across games and most voice apps (note: Discord bypasses driver-level APO noise suppression) with 0 extra devices.";
             StatusBadgeColor = "#30D158"; // Green
         }
 
@@ -248,7 +248,7 @@ public sealed class DeepFilterNetService
         var lines = new[]
         {
             "# Project XLR - DeepFilterNet 3 Neural AI Noise Suppression",
-            "# Eliminates mechanical keyboard clatter for Discord Studio Mode & games",
+            "# Eliminates mechanical keyboard clatter for games & voice apps",
             "Device: Chat Mic",
             $"{prefix}VSTPlugin: Library \"{VstPluginInstalledFile}\" ChunkData \"{chunk}\""
         };
@@ -329,7 +329,7 @@ if (-not (Test-Path '{EqualizerApoConfigDir}')) {{
 
 $config = @(
     '# Project XLR - DeepFilterNet 3 Neural AI Noise Suppression',
-    '# Eliminates mechanical keyboard clatter for Discord Studio Mode & games',
+    '# Eliminates mechanical keyboard clatter for games & voice apps',
     'Device: Chat Mic',
     'VSTPlugin: Library ""{VstPluginInstalledFile}"" ChunkData ""{ChunkBalanced}""'
 )

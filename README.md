@@ -62,7 +62,9 @@ Pushing a `v*` tag triggers [release.yml](.github/workflows/release.yml) to run 
 
 ## Optional: DeepFilterNet 3 AI noise removal
 
-Project XLR can hook **DeepFilterNet 3** directly onto `Chat Mic` using **Equalizer APO** and the **Alt-Denoiser** VST plugin—zero extra virtual audio cables or extra devices in Discord/games. Those third-party binaries aren't committed to git due to size, so if you want it:
+Project XLR can hook **DeepFilterNet 3** directly onto `Chat Mic` using **Equalizer APO** and the **Alt-Denoiser** VST plugin—zero extra virtual audio cables or extra devices in games and apps. Those third-party binaries aren't committed to git due to size, so if you want it:
+
+> **Note (Discord):** Because of how Discord handles microphone capture and audio processing, DeepFilterNet 3 / Equalizer APO noise suppression does not work in Discord. Keep Discord's built-in noise suppression (Krisp) enabled for Discord.
 
 1. Grab **[Equalizer APO (x64)](https://sourceforge.net/projects/equalizerapo/)** and **[Alt-Denoiser (Windows)](https://github.com/Altinus/Alt-Denoiser/releases)**.
 2. Either drop them into `tools\EqualizerAPO\` and `tools\Alt-Denoiser\Alt-Denoiser-windows\` and run [Setup-DeepFilterNet.bat](tools/Setup-DeepFilterNet.bat), or use the setup button on the **Settings** / **Voice** page in the app.

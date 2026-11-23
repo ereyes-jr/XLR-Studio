@@ -1,11 +1,13 @@
 @echo off
-title Setup DeepFilterNet3 for GoXLR Mini (Discord & Games)
+title Setup DeepFilterNet3 for GoXLR Mini (Games & Apps)
 echo =====================================================================
 echo  Project XLR: DeepFilterNet 3 AI Noise Suppression Installer
 echo =====================================================================
 echo.
 echo This will configure DeepFilterNet 3 directly on "Chat Mic (GoXLR Mini)"
-echo with 0 extra audio devices for Discord Studio Mode and games!
+echo with 0 extra audio devices for games and voice apps!
+echo (Note: Because of how Discord captures mic audio, APO noise suppression
+echo  does not apply to Discord; keep Discord's built-in Krisp enabled there.)
 echo.
 
 :: 1. Launch Equalizer APO Installer if not installed
@@ -37,7 +39,7 @@ if exist "%~dp0Alt-Denoiser\Alt-Denoiser-windows\VST3\Alt Denoiser.vst3" (
 echo [3/3] Writing Equalizer APO config for Chat Mic...
 (
     echo # Project XLR - DeepFilterNet 3 Neural AI Noise Suppression
-    echo # Eliminates mechanical keyboard clatter for Discord Studio Mode & games
+    echo # Eliminates mechanical keyboard clatter for games & voice apps
     echo Device: "Chat Mic"
     echo VSTPlugin: Library "C:\Program Files\EqualizerAPO\VSTPlugins\Alt Denoiser.dll"
 ) > "C:\Program Files\EqualizerAPO\config\config.txt" 2>nul
@@ -47,9 +49,10 @@ echo =====================================================================
 echo  SUCCESS! DeepFilterNet 3 is configured on Chat Mic (GoXLR Mini)!
 echo =====================================================================
 echo.
-echo In Discord and games:
+echo In games and voice apps:
 echo   - Keep your Input Device set to: "Chat Mic (TC-Helicon GoXLR Mini)"
-echo   - In Discord: Studio Mode can be ON, Krisp can be OFF
-echo   - 100%% of mechanical keyboard clatter is now eliminated!
+echo   - Note: Discord bypasses Equalizer APO mic processing, so keep Discord's
+echo     built-in Krisp noise suppression enabled when using Discord.
+echo   - Mechanical keyboard clatter is filtered for games and other apps!
 echo.
 pause
